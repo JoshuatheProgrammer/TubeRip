@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://*.ytimg.com https://*.ggpht.com https://i.ytimg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; media-src 'self' https://*.googlevideo.com https://*.youtube.com;">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <title>TubeRip</title>
+</head>
+<body>
+  <canvas id="bgCanvas" class="bg-canvas"></canvas>
+
+  <!-- Custom Title Bar -->
+  <div id="titlebar" class="titlebar">
+    <div class="titlebar-drag">
+      <div class="titlebar-title">
+        <svg class="titlebar-icon" viewBox="0 0 256 256" width="16" height="16">
+          <circle cx="128" cy="128" r="120" fill="#1a1a2e"/>
+          <g fill="#00FFC8" transform="translate(128,128) scale(0.35)">
+            <rect x="-38" y="-145" width="76" height="210" rx="8"/>
+            <polygon points="0,165 -155,15 -100,15 -100,-30 100,-30 100,15 155,15"/>
+            <rect x="-155" y="90" width="310" height="55" rx="8"/>
+          </g>
+        </svg>
+        <span>TubeRip</span>
+      </div>
+    </div>
+    <div class="titlebar-controls">
+      <button id="settingsToggleBtn" class="titlebar-btn" title="Settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button id="closeBtn" class="titlebar-btn titlebar-close" title="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Drop Overlay -->
+  <div id="dropOverlay" class="drop-overlay hidden">
+    <div class="drop-overlay-content">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span data-i18n="dropUrl">Drop YouTube URL here</span>
+    </div>
+  </div>
+
+  <!-- Settings Panel (slide-out overlay) -->
+  <div id="settingsPanel" class="settings-panel hidden">
+    <div class="settings-panel-inner">
+      <div class="settings-header">
+        <h3 class="section-title" data-i18n="settings">Settings</h3>
+        <button id="settingsCloseBtn" class="update-dismiss">&times;</button>
+      </div>
+      <div class="settings-body">
+        <!-- Language -->
+        <div class="settings-row">
+          <label class="option-label" data-i18n="language">Language</label>
+          <select id="langSelect" class="select select-sm">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="pt">Português</option>
+          </select>
+        </div>
+        <!-- Proxy -->
+        <div class="settings-row">
+          <label class="option-label" data-i18n="proxy">Proxy</label>
+          <input type="text" id="proxyInput" class="folder-input settings-input" placeholder="http://host:port or socks5://host:port" spellcheck="false">
+        </div>
+        <!-- Smart Rename -->
+        <div class="settings-row">
+          <label class="option-label" data-i18n="smartRename">Smart Rename</label>
+          <button id="smartRenameToggle" class="toggle-btn" data-enabled="false">Off</button>
+        </div>
+        <!-- Duplicate Detect -->
+        <div class="settings-row">
+          <label class="option-label" data-i18n="duplicateDetect">Duplicate Detection</label>
+          <button id="duplicateDetectToggle" class="toggle-btn" data-enabled="true">On</button>
+        </div>
+        <!-- Download Resume -->
+        <div class="settings-row">
+          <label class="option-label" data-i18n="downloadResume">Resume Downloads</label>
+          <button id="downloadResumeToggle" class="toggle-btn" data-enabled="true">On</button>
+        </div>
+        <!-- Auto Compress -->
+        <div class="settings-row">
+          <label class="option-label" data-i18n="autoCompress">Auto-Compress</label>
+          <button id="autoCompressToggle" class="toggle-btn" data-enabled="false">Off</button>
+        </div>
+        <!-- Codec Picker -->
+        <div class="settings-row">
+          <label class="option-label" data-i18n="videoCodec">Video Codec</label>
+          <select id="videoCodecSelect" class="select select-sm">
+            <option value="">Auto</option>
+            <option value="libx264">H.264</option>
+            <option value="libx265">H.265 (HEVC)</option>
+            <option value="libvpx-vp9">VP9</option>
+            <option value="libaom-av1">AV1</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <label class="option-label" data-i18n="audioCodec">Audio Codec</label>
+          <select id="audioCodecSelect" class="select select-sm">
+            <option value="">Auto</option>
+            <option value="aac">AAC</option>
+            <option value="libmp3lame">MP3</option>
+            <option value="libopus">Opus</option>
+            <option value="flac">FLAC</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main id="app">
+    <!-- Header -->
+    <div class="header">
+      <h1>TubeRip</h1>
+      <p class="subtitle" data-i18n="subtitle">YouTube Media Extractor</p>
+    </div>
+
+    <!-- Update Notification (top center, floating) -->
+    <div id="updateNotification" class="update-notification hidden">
+      <div class="update-notification-content">
+        <span id="updateMessage">A new version of yt-dlp is available!</span>
+        <div class="update-notification-actions">
+          <button id="updateBtn" class="btn btn-sm btn-accent">Update Now</button>
+          <button id="dismissUpdateBtn" class="update-dismiss">&times;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL Input -->
+    <section class="section url-section">
+      <div class="input-mode-toggle">
+        <button id="modeUrl" class="mode-btn active" data-i18n="url">URL</button>
+        <button id="modeSearch" class="mode-btn" data-i18n="search">Search</button>
+      </div>
+      <div class="input-group">
+        <div class="url-input-wrap">
+          <input type="text" id="urlInput" placeholder="Paste YouTube URL here..." spellcheck="false" autocomplete="off">
+          <button id="urlClearBtn" class="url-clear-btn hidden" title="Clear">&times;</button>
+        </div>
+        <button id="fetchBtn" class="btn btn-accent">
+          <span class="btn-text" data-i18n="fetch">Fetch</span>
+          <span class="btn-spinner hidden"></span>
+        </button>
+      </div>
+      <div id="urlError" class="error-text hidden"></div>
+    </section>
+
+    <!-- Download Presets -->
+    <section id="presetsSection" class="section presets-section hidden">
+      <div class="presets-bar">
+        <span class="option-label" data-i18n="presets">Presets</span>
+        <div class="presets-list">
+          <button class="preset-btn" data-preset="quickAudio" data-format="mp3" data-quality="best">Quick Audio</button>
+          <button class="preset-btn" data-preset="hdVideo" data-format="mp4" data-quality="1080">HD Video</button>
+          <button class="preset-btn" data-preset="podcast" data-format="mp3" data-quality="medium">Podcast</button>
+          <button class="preset-btn" data-preset="musicHQ" data-format="flac" data-quality="best">Music HQ</button>
+        </div>
+        <div id="customPresets" class="presets-list"></div>
+      </div>
+    </section>
+
+    <!-- Search Results -->
+    <section id="searchResultsSection" class="section hidden">
+      <div id="searchResults" class="search-results"></div>
+      <button id="loadMoreBtn" class="btn btn-secondary btn-load-more hidden" data-i18n="loadMore">Load More Results</button>
+    </section>
+
+    <!-- Skeleton Loader (shown while fetching) -->
+    <section id="skeletonSection" class="section hidden">
+      <div class="skeleton-card">
+        <div class="skeleton-bone skeleton-thumb"></div>
+        <div class="skeleton-info">
+          <div class="skeleton-bone skeleton-title"></div>
+          <div class="skeleton-bone skeleton-channel"></div>
+          <div class="skeleton-bone skeleton-views"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Video Preview -->
+    <section id="previewSection" class="section preview-section hidden">
+      <div class="preview-card">
+        <div class="thumbnail-wrap">
+          <img id="thumbnail" src="" alt="Video thumbnail">
+          <span id="duration" class="duration-badge"></span>
+          <button id="audioPreviewBtn" class="audio-preview-btn hidden" title="Preview audio">
+            <svg id="audioPreviewIcon" width="24" height="24" viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19" fill="white"/></svg>
+          </button>
+          <div id="audioPreviewProgress" class="audio-preview-progress hidden">
+            <div id="audioPreviewBar" class="audio-preview-bar"></div>
+          </div>
+        </div>
+        <div class="preview-info">
+          <h2 id="videoTitle" class="video-title"></h2>
+          <p id="videoChannel" class="video-channel"></p>
+          <div class="preview-meta-row">
+            <p id="videoViews" class="video-views"></p>
+            <span id="fileSizeEstimate" class="file-size-badge"></span>
+          </div>
+          <div class="preview-actions">
+            <button id="saveThumbnailBtn" class="btn-sm btn-open" title="Save thumbnail">Save Thumbnail</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Playlist Preview -->
+    <section id="playlistSection" class="section playlist-section hidden">
+      <div class="playlist-header-card">
+        <h2 id="playlistTitle" class="video-title"></h2>
+        <div class="playlist-meta">
+          <span id="playlistCount"></span>
+          <span id="playlistDuration"></span>
+        </div>
+        <div class="playlist-actions">
+          <button id="selectAllBtn" class="btn-sm btn-open" data-i18n="selectAll">Select All</button>
+          <button id="deselectAllBtn" class="btn-sm btn-cancel" data-i18n="deselectAll">Deselect All</button>
+        </div>
+      </div>
+      <div id="playlistVideos" class="playlist-videos"></div>
+    </section>
+
+    <!-- Options -->
+    <section id="optionsSection" class="section options-section hidden">
+      <div class="options-grid">
+        <!-- Format -->
+        <div class="option-group">
+          <label class="option-label" data-i18n="format">Format</label>
+          <select id="formatSelect" class="select">
+            <optgroup label="Video">
+              <option value="mp4" selected>MP4</option>
+              <option value="webm">WEBM</option>
+              <option value="avi">AVI</option>
+            </optgroup>
+            <optgroup label="Audio">
+              <option value="mp3">MP3</option>
+              <option value="wav">WAV</option>
+              <option value="flac">FLAC</option>
+              <option value="aac">AAC</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <!-- Quality -->
+        <div class="option-group">
+          <label class="option-label" data-i18n="quality">Quality</label>
+          <select id="qualitySelect" class="select">
+            <option value="best">Best Quality</option>
+            <option value="1080">1080p (Full HD)</option>
+            <option value="720">720p (HD)</option>
+            <option value="480">480p (SD)</option>
+            <option value="360">360p (Low)</option>
+          </select>
+        </div>
+
+        <!-- Subtitles -->
+        <div class="option-group">
+          <label class="option-label" data-i18n="subtitles">Subtitles</label>
+          <select id="subtitleSelect" class="select">
+            <option value="">None</option>
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="pt">Portuguese</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="zh">Chinese</option>
+            <option value="ar">Arabic</option>
+            <option value="hi">Hindi</option>
+            <option value="ru">Russian</option>
+            <option value="it">Italian</option>
+            <option value="all">All Available</option>
+          </select>
+          <select id="subtitleFormat" class="select select-sm" style="margin-top:4px;">
+            <option value="srt">SRT</option>
+            <option value="vtt">VTT</option>
+          </select>
+        </div>
+
+        <!-- Speed Limit -->
+        <div class="option-group">
+          <label class="option-label" data-i18n="speedLimit">Speed Limit</label>
+          <select id="speedLimitSelect" class="select">
+            <option value="">Unlimited</option>
+            <option value="1M">1 MB/s</option>
+            <option value="2M">2 MB/s</option>
+            <option value="5M">5 MB/s</option>
+            <option value="10M">10 MB/s</option>
+          </select>
+        </div>
+
+        <!-- Output folder -->
+        <div class="option-group folder-group">
+          <label class="option-label" data-i18n="saveTo">Save to</label>
+          <div class="folder-picker">
+            <input type="text" id="outputPath" class="folder-input" readonly>
+            <button id="browseBtn" class="btn btn-secondary" data-i18n="browse">Browse</button>
+          </div>
+        </div>
+
+        <!-- Filename Template -->
+        <div class="option-group filename-group">
+          <label class="option-label" data-i18n="filenameTemplate">Filename Template</label>
+          <div class="filename-template-wrap">
+            <input type="text" id="filenameTemplate" class="folder-input" value="{title}" placeholder="{title}">
+            <div class="template-tokens">
+              <button class="token-btn" data-token="{title}">{title}</button>
+              <button class="token-btn" data-token="{channel}">{channel}</button>
+              <button class="token-btn" data-token="{date}">{date}</button>
+              <button class="token-btn" data-token="{id}">{id}</button>
+              <button class="token-btn" data-token="{resolution}">{resolution}</button>
+            </div>
+            <div class="template-preview">
+              <span class="option-label" data-i18n="preview">Preview:</span>
+              <span id="filenamePreview" class="filename-preview-text">My Video Title.mp4</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button id="downloadBtn" class="btn btn-download" data-i18n="download">
+        Download
+      </button>
+    </section>
+
+    <!-- Download Queue -->
+    <section class="section downloads-section" id="downloadsSection">
+      <div class="downloads-header">
+        <div class="queue-tabs">
+          <button class="queue-tab active" data-tab="active" data-i18n="active">Active <span id="activeCount" class="tab-count">0</span></button>
+          <button class="queue-tab" data-tab="pending" data-i18n="pending">Pending <span id="pendingCount" class="tab-count">0</span></button>
+          <button class="queue-tab" data-tab="completed" data-i18n="completed">Completed <span id="completedCount" class="tab-count">0</span></button>
+        </div>
+        <div class="downloads-settings-row">
+          <label class="option-label" data-i18n="sound">Sound</label>
+          <select id="soundSelect" class="select select-sm">
+            <option value="chime">Chime</option>
+            <option value="success">Success</option>
+            <option value="bell">Bell</option>
+            <option value="pulse">Pulse</option>
+            <option value="ripple">Ripple</option>
+            <option value="none">None</option>
+          </select>
+          <button id="previewSoundBtn" class="btn-sm btn-open" title="Preview sound">&#9654;</button>
+        </div>
+      </div>
+      <!-- Bandwidth Monitor -->
+      <div id="bandwidthMonitor" class="bandwidth-monitor hidden">
+        <canvas id="bandwidthCanvas" class="bandwidth-canvas" width="400" height="60"></canvas>
+        <span id="bandwidthLabel" class="bandwidth-label"></span>
+      </div>
+      <div id="queueActive" class="queue-panel"></div>
+      <div id="queuePending" class="queue-panel hidden"></div>
+      <div id="queueCompleted" class="queue-panel hidden"></div>
+    </section>
+
+    <!-- Media Tools -->
+    <section id="mediaToolsSection" class="section">
+      <div class="tools-header">
+        <h3 class="section-title" data-i18n="tools">Media Tools</h3>
+        <button id="toolsToggleBtn" class="btn-sm btn-open">Show</button>
+      </div>
+      <div id="toolsBody" class="tools-body hidden">
+        <div class="tools-grid">
+          <button class="tool-card" data-tool="convert">
+            <span class="tool-icon">&#128260;</span>
+            <span class="tool-label" data-i18n="convert">Convert</span>
+          </button>
+          <button class="tool-card" data-tool="compress">
+            <span class="tool-icon">&#128230;</span>
+            <span class="tool-label" data-i18n="compress">Compress</span>
+          </button>
+          <button class="tool-card" data-tool="stabilize">
+            <span class="tool-icon">&#127909;</span>
+            <span class="tool-label" data-i18n="stabilize">Stabilize</span>
+          </button>
+          <button class="tool-card" data-tool="audioBoost">
+            <span class="tool-icon">&#128266;</span>
+            <span class="tool-label" data-i18n="audioBoost">Audio Boost</span>
+          </button>
+          <button class="tool-card" data-tool="aspectRatio">
+            <span class="tool-icon">&#128438;</span>
+            <span class="tool-label" data-i18n="aspectRatio">Aspect Ratio</span>
+          </button>
+        </div>
+        <!-- Tool options (shown when a tool is selected) -->
+        <div id="toolOptions" class="tool-options hidden">
+          <div id="toolOptionsContent"></div>
+          <div class="tool-progress hidden" id="toolProgress">
+            <div class="progress-wrap">
+              <div class="progress-bar" id="toolProgressBar"></div>
+            </div>
+            <span id="toolProgressLabel" class="download-status"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download History -->
+    <section id="historySection" class="section hidden">
+      <div class="history-header">
+        <h3 class="section-title" data-i18n="history">History</h3>
+        <button id="clearHistoryBtn" class="btn-clear-history" data-i18n="clearHistory">Clear History</button>
+      </div>
+      <div id="historyList"></div>
+    </section>
+  </main>
+
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

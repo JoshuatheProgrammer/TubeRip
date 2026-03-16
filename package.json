@@ -1,0 +1,40 @@
+{
+  "name": "tuberip",
+  "version": "1.0.0",
+  "description": "YouTube media extractor",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.tuberip.app",
+    "productName": "TubeRip",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/win",
+        "to": "bin",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": ["portable"],
+      "icon": "assets/icon.ico"
+    },
+    "portable": {
+      "artifactName": "TubeRip-Portable.exe"
+    }
+  }
+}
