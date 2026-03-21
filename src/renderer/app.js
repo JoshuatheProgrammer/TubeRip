@@ -1012,15 +1012,18 @@ async function checkForUpdates() {
   try {
     const result = await window.api.checkForUpdate();
     if (result.updateAvailable) {
-      updateMessage.textContent = `yt-dlp update available: ${result.currentVersion} → ${result.latestVersion}`;
+      // Auto-update yt-dlp silently on startup
+      updateMessage.textContent = `Updating yt-dlp: ${result.currentVersion} → ${result.latestVersion}`;
       updateNotification.classList.remove('hidden');
+      updateBtn.classList.add('hidden');
+      await performUpdate(true);
     }
   } catch {
     // Silently fail
   }
 }
 
-async function performUpdate() {
+async function performUpdate(auto = false) {
   updateBtn.disabled = true;
   updateBtn.textContent = 'Updating...';
 
@@ -1031,9 +1034,10 @@ async function performUpdate() {
     showToast('yt-dlp updated successfully!', 'success');
     setTimeout(() => updateNotification.classList.add('hidden'), 3000);
   } catch (err) {
-    updateMessage.textContent = `Update failed: ${err.message}`;
+    updateMessage.textContent = `Auto-update failed: ${err.message}`;
     updateBtn.disabled = false;
     updateBtn.textContent = 'Retry';
+    updateBtn.classList.remove('hidden');
   }
 }
 

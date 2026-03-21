@@ -8,13 +8,8 @@
 
 ## Screenshots
 
-<img width="952" height="726" alt="image" src="https://github.com/user-attachments/assets/4191dfab-a11f-4c04-99c3-79af72378ee5" />
-
-<img width="925" height="1119" alt="image" src="https://github.com/user-attachments/assets/c4bc48ea-168e-4d3c-9048-95e90212be3d" />
-
-<img width="928" height="1089" alt="image" src="https://github.com/user-attachments/assets/67cd751b-90c5-45e6-9715-24678ac4a278" />
-
-<img width="929" height="1093" alt="image" src="https://github.com/user-attachments/assets/0f455b31-a67d-4677-9715-45c7252f88e3" />
+<!-- Add screenshots of your app here -->
+<!-- ![TubeRip Main Interface](screenshots/main.png) -->
 
 ---
 
@@ -82,6 +77,17 @@ npm run build:win
 ```
 
 > **Note:** When building from source, you must provide your own `yt-dlp.exe` and `ffmpeg.exe` binaries in the `bin/win/` directory.
+
+---
+
+## System Requirements
+
+| Requirement | Details |
+|---|---|
+| **OS** | Windows 10 / 11 (64-bit) |
+| **RAM** | 4 GB minimum |
+| **Disk Space** | ~200 MB (app + bundled binaries) |
+| **Internet** | Required for downloading content |
 
 ---
 
