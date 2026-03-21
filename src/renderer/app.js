@@ -1009,14 +1009,27 @@ function updateDownloadBtnText() {
 
 // ===== Updater =====
 async function checkForUpdates() {
+  // Update yt-dlp
   try {
     const result = await window.api.checkForUpdate();
     if (result.updateAvailable) {
-      // Auto-update yt-dlp silently on startup
       updateMessage.textContent = `Updating yt-dlp: ${result.currentVersion} → ${result.latestVersion}`;
       updateNotification.classList.remove('hidden');
       updateBtn.classList.add('hidden');
       await performUpdate(true);
+    }
+  } catch {
+    // Silently fail
+  }
+
+  // Update ffmpeg
+  try {
+    const ffResult = await window.api.checkFfmpegUpdate();
+    if (ffResult.updateAvailable) {
+      updateMessage.textContent = `Updating ffmpeg: ${ffResult.currentVersion} → ${ffResult.latestVersion}`;
+      updateNotification.classList.remove('hidden');
+      updateBtn.classList.add('hidden');
+      await performFfmpegUpdate();
     }
   } catch {
     // Silently fail
@@ -1035,6 +1048,20 @@ async function performUpdate(auto = false) {
     setTimeout(() => updateNotification.classList.add('hidden'), 3000);
   } catch (err) {
     updateMessage.textContent = `Auto-update failed: ${err.message}`;
+    updateBtn.disabled = false;
+    updateBtn.textContent = 'Retry';
+    updateBtn.classList.remove('hidden');
+  }
+}
+
+async function performFfmpegUpdate() {
+  try {
+    await window.api.performFfmpegUpdate();
+    updateMessage.textContent = 'ffmpeg updated successfully!';
+    showToast('ffmpeg updated successfully!', 'success');
+    setTimeout(() => updateNotification.classList.add('hidden'), 3000);
+  } catch (err) {
+    updateMessage.textContent = `ffmpeg update failed: ${err.message}`;
     updateBtn.disabled = false;
     updateBtn.textContent = 'Retry';
     updateBtn.classList.remove('hidden');

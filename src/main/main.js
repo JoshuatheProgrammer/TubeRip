@@ -3,7 +3,7 @@ const path = require('path');
 const { registerHandlers } = require('./ipc-handlers');
 const { DownloadManager } = require('./download-manager');
 const { YtdlpService } = require('./ytdlp-service');
-const { YtdlpUpdater } = require('./updater-service');
+const { YtdlpUpdater, FfmpegUpdater } = require('./updater-service');
 const { checkBinaries } = require('./binary-manager');
 const settingsManager = require('./settings-manager');
 
@@ -49,6 +49,7 @@ app.whenReady().then(() => {
   const ytdlpService = new YtdlpService();
   const downloadManager = new DownloadManager(ytdlpService, null);
   const updater = new YtdlpUpdater(ytdlpService);
+  const ffmpegUpdater = new FfmpegUpdater();
 
   // Apply saved settings
   downloadManager.setSpeedLimit(settings.speedLimit);
@@ -56,7 +57,7 @@ app.whenReady().then(() => {
 
   createWindow();
   downloadManager.setWindow(mainWindow);
-  registerHandlers(mainWindow, downloadManager, ytdlpService, updater);
+  registerHandlers(mainWindow, downloadManager, ytdlpService, updater, ffmpegUpdater);
 });
 
 app.on('window-all-closed', () => {

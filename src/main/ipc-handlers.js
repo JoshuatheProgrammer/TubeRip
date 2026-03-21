@@ -6,7 +6,7 @@ const { MediaTools } = require('./media-tools');
 
 const mediaTools = new MediaTools();
 
-function registerHandlers(mainWindow, downloadManager, ytdlpService, updater) {
+function registerHandlers(mainWindow, downloadManager, ytdlpService, updater, ffmpegUpdater) {
   ipcMain.handle('video:getInfo', async (_event, url) => {
     if (!isValidYoutubeUrl(url)) {
       throw new Error('Invalid YouTube URL');
@@ -132,6 +132,20 @@ function registerHandlers(mainWindow, downloadManager, ytdlpService, updater) {
     }
     return await updater.performUpdate((progress) => {
       mainWindow.webContents.send('updater:progress', progress);
+    });
+  });
+
+  // ===== FFmpeg Updater =====
+  ipcMain.handle('ffmpeg:checkUpdate', async () => {
+    return await ffmpegUpdater.checkForUpdate();
+  });
+
+  ipcMain.handle('ffmpeg:update', async () => {
+    if (downloadManager.hasActiveDownloads()) {
+      throw new Error('Cannot update while downloads are active');
+    }
+    return await ffmpegUpdater.performUpdate((progress) => {
+      mainWindow.webContents.send('ffmpeg:progress', progress);
     });
   });
 

@@ -66,6 +66,13 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on('updater:progress', (_event, data) => callback(data));
   },
 
+  // FFmpeg updater
+  checkFfmpegUpdate: () => ipcRenderer.invoke('ffmpeg:checkUpdate'),
+  performFfmpegUpdate: () => ipcRenderer.invoke('ffmpeg:update'),
+  onFfmpegProgress: (callback) => {
+    ipcRenderer.on('ffmpeg:progress', (_event, data) => callback(data));
+  },
+
   // Thumbnail saver
   saveThumbnail: (thumbnailUrl, outputPath, title) => ipcRenderer.invoke('thumbnail:save', thumbnailUrl, outputPath, title),
 
